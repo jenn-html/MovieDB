@@ -22,19 +22,24 @@ namespace MovieDB.Controllers
         {
             Console.Clear();
             Banner.MovieDBBanner();
-            MovieService.GetGenreWithId();
-            try
+            var hasGenres = IsThereGenresInTheDatabase();
+            if (hasGenres == true)
             {
-                Console.WriteLine("Select genre from ID:");
-                var genreId = Convert.ToInt32(Console.ReadLine());
-                Console.Clear();
-                Banner.MovieDBBanner();
-                MovieService.SearchMovieAfterGenre(genreId);
+                MovieService.GetGenreWithId();
+                try
+                {
+                    Console.WriteLine("Select genre from ID:");
+                    var genreId = Convert.ToInt32(Console.ReadLine());
+                    Console.Clear();
+                    Banner.MovieDBBanner();
+                    MovieService.SearchMovieAfterGenre(genreId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Wrong format");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Wrong format");
-            }
+
         }
         public static void AddMovie(string movieTitle, int movieYear, int genreId)
         {
@@ -47,6 +52,10 @@ namespace MovieDB.Controllers
         public static void GetGenresWithId()
         {
             MovieService.GetGenreWithId();
+        }
+        public static bool IsThereGenresInTheDatabase()
+        {
+            return MovieService.IsThereGenresInTheDatabase();
         }
 
     }

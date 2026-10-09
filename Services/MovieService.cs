@@ -31,5 +31,9 @@ namespace MovieDB.Services
         {
             MovieRepository.GetGenreWithId();
         }
+        public static bool IsThereGenresInTheDatabase()
+        {
+           return MovieRepository.IsThereGenresInTheDatabase();
+        }
     }
 }
