@@ -6,22 +6,26 @@ using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using MovieDB;
 
 namespace MovieDB.Repositories
 {
     internal class MovieRepository
     {
+        private static readonly string _connectionString =
+            "Server=localhost;Database=MovieDB;Trusted_Connection=True;TrustServerCertificate=True;";
         public static void DeleteMovie(int movieIdToDelete)
         {
-            using var connection = DatabaseConfig.CreateConnection();
+
+
+
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             string sql = "DELETE FROM Movie WHERE Movie_id = @Id";
 
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@Id", movieIdToDelete)
+                    new SqlParameter("@Id", movieIdToDelete)
             };
 
             using var command = new SqlCommand(sql, connection);
@@ -38,11 +42,12 @@ namespace MovieDB.Repositories
             {
                 Console.WriteLine($"Could not find a move with ID: {movieIdToDelete}.");
             }
-        }
 
+        }
         public static void ShowAllMovies()
         {
-            using var connection = DatabaseConfig.CreateConnection();
+
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
             string sql = "SELECT m.MovieTitle, m.MovieReleaseYear, g.GenreName FROM Movie m INNER JOIN Genre g ON m.Genre_id = g.Genre_id";
 
@@ -62,10 +67,10 @@ namespace MovieDB.Repositories
                 Console.WriteLine($"{i++}.{movieTitle} ({movieYear}) - {movieGenre} ");
             }
         }
-
         public static void ShowAllMoviesWithId()
         {
-            using var connection = DatabaseConfig.CreateConnection();
+           
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT m.Movie_id, m.MovieTitle, m.MovieReleaseYear, g.GenreName " +
@@ -93,16 +98,18 @@ namespace MovieDB.Repositories
             {
                 int id = Convert.ToInt32(Console.ReadLine());
                 MovieController.DeleteMovie(id);
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Console.WriteLine("Wrong format on ID");
             }
-        }
 
+        }
         public static void GetGenreWithId()
         {
-            using var connection = DatabaseConfig.CreateConnection();
+        
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
             string sql = "SELECT * FROM Genre";
 
@@ -113,7 +120,7 @@ namespace MovieDB.Repositories
                 Console.WriteLine("Could not find any genres.");
                 return;
             }
-
+           
             while (reader.Read())
             {
                 int genreId = reader.GetInt32(reader.GetOrdinal("Genre_id"));
@@ -122,19 +129,21 @@ namespace MovieDB.Repositories
                 Console.WriteLine($"Genre ID: {genreId} {genreName}");
             }
         }
-
         public static void AddMovie(string movieTitle, int movieYear, int genreId)
         {
-            using var connection = DatabaseConfig.CreateConnection();
+
+
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             string sql = "Insert into Movie (MovieTitle, MovieReleaseYear, Genre_id) Values (@Title, @Year, @GenreId);";
 
+
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@Title", movieTitle),
-                new SqlParameter("@Year", movieYear),
-                new SqlParameter("@GenreId", genreId)
+                    new SqlParameter("@Title", movieTitle),
+                    new SqlParameter("@Year", movieYear),
+                    new SqlParameter("@GenreId", genreId)
             };
 
             using var command = new SqlCommand(sql, connection);
@@ -152,15 +161,15 @@ namespace MovieDB.Repositories
                 Console.WriteLine($"Could not add new movie");
             }
         }
-
         public static void SearchMovieAfterGenre(int genreId)
         {
-            using var connection = DatabaseConfig.CreateConnection();
+
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
             string sql = "SELECT MovieTitle, MovieReleaseYear FROM Movie WHERE Genre_id = @GenreId";
             SqlParameter[] parameters = new SqlParameter[]
            {
-                new SqlParameter("@GenreId", genreId)
+                    new SqlParameter("@GenreId", genreId)
            };
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddRange(parameters);
@@ -179,10 +188,10 @@ namespace MovieDB.Repositories
                 Console.WriteLine($"{i++}. {movieTitle} ({movieYear})");
             }
         }
-
         public static bool IsThereGenresInTheDatabase()
         {
-            using var connection = DatabaseConfig.CreateConnection();
+          
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
             string sql = "SELECT * FROM Genre";
             using var command = new SqlCommand(sql, connection);
@@ -194,10 +203,10 @@ namespace MovieDB.Repositories
             }
             else return true;
         }
-
         public static void SeedData()
         {
-            using var connection = DatabaseConfig.CreateConnection();
+
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             string sql = "SELECT COUNT(*) FROM Genre";
@@ -205,10 +214,8 @@ namespace MovieDB.Repositories
 
             int count = (int)command.ExecuteScalar();
 
-            // Om databasen är helt tom, fyll på med startdata
             if (count == 0)
             {
-                // 1. Lägg till genrer först
                 string addGenres = "INSERT INTO Genre(GenreName) VALUES ('Comedy'),('Horror'),('Action'),('Fantasy'),('Satire'),('Sci-Fi'),('Thriller'),('Romance'),('Drama'),('Family');";
                 using var cmdGenres = new SqlCommand(addGenres, connection);
                 cmdGenres.ExecuteNonQuery();
@@ -237,5 +244,7 @@ namespace MovieDB.Repositories
                 Console.WriteLine($"{rowsAffected} filmer har lagts till i databasen!");
             }
         }
+
+
     }
 }
